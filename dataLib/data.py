@@ -436,7 +436,7 @@ class Data(object):
         mask[y1:y2,x1:x2]=image
         template_mask[y1:y2,x1:x2]=image
         template[mask>0]=randColor(100,single=False)
-        template_label={"region":word_labels}
+        template_label={"addr":word_labels}
         return template,template_mask,template_label
             
     def createCardFront(self,type):

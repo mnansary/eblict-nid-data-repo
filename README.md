@@ -32,4 +32,4 @@ Gnome       : 3.28.2
 
 # TODO
 - [x] fix placements
-- [ ] combine yolos
+- [x] combine yolos
