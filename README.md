@@ -31,5 +31,5 @@ Gnome       : 3.28.2
 * **conda**: use environment.yml: ```conda env create -f environment.yml```
 
 # TODO
-- [ ] fix placements
+- [x] fix placements
 - [ ] combine yolos

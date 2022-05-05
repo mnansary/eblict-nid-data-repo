@@ -337,7 +337,7 @@ class Data(object):
                 "nid"  :self.__createNID(type)}
 
     #------------------------------------------------------------------------------------------------
-    def createCardBack(self,type,text_width=60):
+    def createCardBack(self,type):
         '''
             creates an image of card back side data
         '''
@@ -346,9 +346,11 @@ class Data(object):
         if type=="smart":
             card_back=self.card.smart.back  
             text_add="        "  
+            text_width=60
         else:
             card_back=self.card.nid.back
             text_add=""
+            text_width=100
         template =cv2.imread(card_back.template)
         # mask
         h_t,w_t,d=template.shape
@@ -433,7 +435,7 @@ class Data(object):
         image=padToFixedHeight(image,height_loc)
         mask[y1:y2,x1:x2]=image
         template_mask[y1:y2,x1:x2]=image
-        template[mask>0]=randColor(100)
+        template[mask>0]=randColor(100,single=False)
         template_label={"region":word_labels}
         return template,template_mask,template_label
             
