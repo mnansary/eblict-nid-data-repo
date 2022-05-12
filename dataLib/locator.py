@@ -95,7 +95,7 @@ def augment_img_base(img_path,face,config):
             for word in v:
                 for wi,wv in word.items():
                     mask[mask==int(wi)]=mark    
-    
+    mask[mask==0]=100
     
     curr_coord=[[0,0], 
                 [width-1,0], 
