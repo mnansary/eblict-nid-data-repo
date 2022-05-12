@@ -46,6 +46,9 @@ def main(args):
                         image,mask,data=src.createCardBack(card_type)
                     image=enhanceImage(image)
                     image=aug.noise(image)
+                    if random_exec(weights=[0.3,0.7],match=0):
+                        image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+        
                     # save
                     cv2.imwrite(os.path.join(img_dir,f"{card_type}_{face}_{i}.png"),image)
                     cv2.imwrite(os.path.join(mask_dir,f"{card_type}_{face}_{i}.png"),mask)

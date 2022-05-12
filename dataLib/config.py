@@ -14,7 +14,7 @@ class name:
     frag_weights= [0.8,0.2]
 
 class aug:
-    max_rotation  = 10
-    max_warp_perc = 5 
-    max_pad_perc  = 15
+    max_rotation  = 30
+    max_warp_perc = 30 
+    max_pad_perc  = 40
     use_scope_rotation=False

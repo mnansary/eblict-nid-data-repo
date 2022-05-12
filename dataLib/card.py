@@ -26,7 +26,7 @@ class card:
                         }
         class back:
             text        ={
-                            "addr"        :   {"location":[ 40, 185, 637, 278],"font_size":60,"lang":"bn","font":"reg"}
+                            "addr"        :   {"location":[40, 185, 637, 278],"font_size":60,"lang":"bn","font":"reg"}
                         }
             
     class nid:
@@ -43,6 +43,6 @@ class card:
                             }
         class back:
             text        =  {
-                            "addr"        :   {"location":[112, 135,  1000, 250],"font_size":46,"lang":"bn","font":"reg"}
+                            "addr"        :   {"location":[35, 135,  1000, 250],"font_size":46,"lang":"bn","font":"reg"}
                            }
             

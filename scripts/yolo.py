@@ -13,6 +13,7 @@ from dataLib.data import Data
 from dataLib.locator import render_data,data_classes,marking
 from dataLib.utils import *
 from dataLib.config import aug
+from dataLib.augmentation import get_augmented_data
 
 from tqdm.auto import tqdm
 from glob import glob
@@ -62,6 +63,9 @@ def main(args):
         # save
         img=cv2.resize(img,(data_dim,data_dim))
         mask=cv2.resize(mask,(data_dim,data_dim),fx=0,fy=0,interpolation=cv2.INTER_NEAREST)
+        if random_exec(weights=[0.7,0.3],match=0):
+            img=get_augmented_data(img)
+            
 
         # saving
         cv2.imwrite(os.path.join(img_dir,f"{card_type}_{face}_{idx}.jpg"),img)

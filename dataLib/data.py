@@ -23,7 +23,7 @@ import textwrap
 
 from .card import card
 from .config import name,aug
-from .utils import padToFixedHeight,padToFixedHeightWidth,randColor
+from .utils import padToFixedHeight,padToFixedHeightWidth,randColor, random_exec
 
 gp=graphemeParser("bangla")
 
@@ -347,9 +347,17 @@ class Data(object):
             card_back=self.card.smart.back  
             text_add="        "  
             text_width=60
+            xadd=0
         else:
             card_back=self.card.nid.back
-            text_add=""
+            if random_exec(weights=[0.5,0.5]):
+                text_add="       "
+                xadd=0
+            else:
+                text_add=""
+                xadd=80
+            
+                
             text_width=100
         template =cv2.imread(card_back.template)
         # mask
@@ -363,6 +371,7 @@ class Data(object):
         mask=np.zeros((h_t,w_t))
         # height width
         x1,y1,x2,y2=card_back.text["addr"]["location"]
+        x1=x1+xadd
         width_loc=x2-x1
         height_loc=y2-y1
         # divide lines
@@ -435,7 +444,7 @@ class Data(object):
         image=padToFixedHeight(image,height_loc)
         mask[y1:y2,x1:x2]=image
         template_mask[y1:y2,x1:x2]=image
-        template[mask>0]=randColor(100,single=False)
+        template[mask>0]=randColor(100,single=True)
         template_label={"addr":word_labels}
         return template,template_mask,template_label
             
@@ -447,7 +456,7 @@ class Data(object):
         iden=2
         if type=="smart":
             card_front=self.card.smart.front
-            info_color=randColor(100)
+            info_color=randColor(100,single=True)
         else:
             card_front=self.card.nid.front
             info_color=(0,0,255)
@@ -540,7 +549,7 @@ class Data(object):
             if k in info_keys:
                 template[mask>0]=info_color
             else:
-                template[mask>0]=randColor(100)
+                template[mask>0]=randColor(100,single=True)
             template_label[k]=word_labels
             
         return template,template_mask,template_label
