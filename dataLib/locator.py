@@ -17,13 +17,16 @@ gp=graphemeParser("bangla")
 # mask data
 #--------------------
 marking={}    
-marking["bname"]    =1
-marking["ename"]    =2
-marking["fname"]    =3
-marking["mname"]    =4
-marking["dob"]      =5
-marking["nid"]      =6
-marking["addr"]     =7
+marking["sign"]     =1
+marking["bname"]    =2
+marking["ename"]    =3
+marking["fname"]    =4
+marking["mname"]    =5
+marking["dob"]      =6
+marking["nid"]      =7
+marking["front"]    =8
+marking["addr"]     =9
+marking["back"]     =10
 data_classes=[_class for _class in marking.keys()]
 
 #---------------------------------------------------------------------------------------
@@ -95,7 +98,7 @@ def augment_img_base(img_path,face,config):
             for word in v:
                 for wi,wv in word.items():
                     mask[mask==int(wi)]=mark    
-    mask[mask==0]=100
+    mask[mask==0]=marking[face]
     
     curr_coord=[[0,0], 
                 [width-1,0], 
@@ -176,7 +179,7 @@ def render_data(backgen,img_path,face,config):
     img,mask,coord=augment_img_base(img_path,face,config)    
         
     # background
-    if random_exec(weights=[0.9,0.1],match=0):
+    if random_exec(weights=[0.7,0.3],match=0):
         # pad
         img,mask,coord=pad_image_mask(img,mask,coord,config)
         back=next(backgen)
