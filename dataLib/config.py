@@ -15,6 +15,6 @@ class name:
 
 class aug:
     max_rotation  = 5
-    max_warp_perc = 30 
+    max_warp_perc = 20 
     max_pad_perc  = 50
     use_scope_rotation=False

@@ -31,16 +31,7 @@ data_classes=[_class for _class in marking.keys()]
 
 #---------------------------------------------------------------------------------------
 
-def get_warped_image(img,mask,src,config,warp_vec):
-    '''
-        returns warped image and new coords
-        args:
-            img      : image to warp
-            mask     : mask for augmentation
-            src      : list of current coords
-            config   : warping config
-            warp_vec : which vector to warp  
-    '''
+def get_warped_image(img,mask,src,xwarp,ywarp,warp_vec):
     height,width,_=img.shape
  
     # construct dict warp
@@ -48,9 +39,6 @@ def get_warped_image(img,mask,src,config,warp_vec):
     x2,y2=src[1]
     x3,y3=src[2]
     x4,y4=src[3]
-    # warping calculation
-    xwarp=random.randint(0,config.max_warp_perc)/100
-    ywarp=random.randint(0,config.max_warp_perc)/100
     # construct destination
     dx=int(width*xwarp)
     dy=int(height*ywarp)
@@ -105,17 +93,24 @@ def augment_img_base(img_path,face,config):
                 [width-1,height-1], 
                 [0,height-1]]
     
-    # warp
-    for i in range(2):
-        if i==0:
-            idxs=[0,2]
-        else:
-            idxs=[1,3]
-        if random_exec():    
-            idx=random.choice(idxs)
-            img,mask,curr_coord=get_warped_image(img,mask,curr_coord,config,warp_types[idx])
+    # # warp
+    # for i in range(2):
+    #     if i==0:
+    #         idxs=[0,2]
+    #     else:
+    #         idxs=[1,3]
+    if random_exec(weights=[0.6,0.4],match=0):    
+        w1type=warp_types[random.choice([0,2])]
+        w2type=warp_types[random.choice([1,3])]
+        # warping calculation
+        xwarp=random.randint(0,config.max_warp_perc)/100
+        ywarp=random.randint(0,config.max_warp_perc)/100
+        
+        img,mask,curr_coord=get_warped_image(img,mask,curr_coord,xwarp,ywarp,w1type)
+        img,mask,curr_coord=get_warped_image(img,mask,curr_coord,xwarp,ywarp,w2type)
 
-    if random_exec(): 
+
+    if random_exec(weights=[0.3,0.7],match=0): 
         # plane rotation
         angle=random.randint(-config.max_rotation,config.max_rotation)
         img,M =rotate_image(img,angle)
