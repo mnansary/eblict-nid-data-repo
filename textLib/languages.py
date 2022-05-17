@@ -38,7 +38,7 @@ class bangla:
                                  '{', '|', '}', '~', '।']
     # for grapheme decomp
     vowel_diacritics       =    ['া', 'ি', 'ী', 'ু', 'ূ', 'ৃ', 'ে', 'ৈ', 'ো', 'ৌ']
-    consonant_diacritics   =    ['ঁ', 'র্', 'র্য', '্য', '্র', '্র্য', 'র্্র']
+    consonant_diacritics   =    ['ঁ']
     modifiers              =    []
     connector              =    '্'
     # special charecters
