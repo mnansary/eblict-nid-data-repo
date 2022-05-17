@@ -278,8 +278,11 @@ def padWordImage(img,pad_loc,pad_dim,pad_type,pad_val,gray=False):
             # pad
             img =np.concatenate([img,pad],axis=1)
     else:
-        # shape
-        h,w,d=img.shape
+        if gray:
+            # shape
+            h,w=img.shape
+        else:
+            h,w,d=img.shape
         # pad heights
         if h>= pad_dim:
             return img 

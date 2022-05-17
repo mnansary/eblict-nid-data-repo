@@ -207,47 +207,47 @@ def createSyntheticData(iden,
     words=[]
     fiden=0+fname_offset
     for idx in tqdm(range(len(dictionary))):
-    #    try:
-        comps=dictionary.iloc[idx,1]
-        # word mask
-        fsize=random.randint(text_conf.min_font_text_dim,text_conf.max_font_text_dim)
-        font=PIL.ImageFont.truetype(random.choice(resources.fonts),fsize)
-        mask,wmask,hmap,lmap=create_masks(comps,font,comp_dim)
-        # image
-        back=get_background(mask,resources.backs)
-        fore=get_foreground(mask,resources.backs)
-        image=get_blended_data(back,fore,mask)
-        image=get_augmented_data(image)
-        #-----------------------------------------------------------------------
-        # save
-        fname=f"{fiden}.png"
-        ## image
-        image,_=correctPadding(image,img_dim,ptype="left")
-        cv2.imwrite(os.path.join(save.image,fname),image)
-        
-        wmask,_=correctPadding(wmask,img_dim,ptype="left",pvalue=0)
-        cv2.imwrite(os.path.join(save.wmask,fname),wmask)
+        try:
+            comps=dictionary.iloc[idx,1]
+            # word mask
+            fsize=random.randint(text_conf.min_font_text_dim,text_conf.max_font_text_dim)
+            font=PIL.ImageFont.truetype(random.choice(resources.fonts),fsize)
+            mask,wmask,hmap,lmap=create_masks(comps,font,comp_dim)
+            # image
+            back=get_background(mask,resources.backs)
+            fore=get_foreground(mask,resources.backs)
+            image=get_blended_data(back,fore,mask)
+            image=get_augmented_data(image)
+            #-----------------------------------------------------------------------
+            # save
+            fname=f"{fiden}.png"
+            ## image
+            image,_=correctPadding(image,img_dim,ptype="left")
+            cv2.imwrite(os.path.join(save.image,fname),image)
+            
+            wmask,_=correctPadding(wmask,img_dim,ptype="left",pvalue=0)
+            cv2.imwrite(os.path.join(save.wmask,fname),wmask)
 
-        form=255-wmask
-        form=cv2.merge((form,form,form))
-        form,_=correctPadding(form,img_dim,ptype="left")
-        cv2.imwrite(os.path.join(save.form,fname),form)
+            form=255-wmask
+            form=cv2.merge((form,form,form))
+            form,_=correctPadding(form,img_dim,ptype="left")
+            cv2.imwrite(os.path.join(save.form,fname),form)
 
-        hmap,_=correctPadding(hmap,img_dim,ptype="left",pvalue=0)
-        cv2.imwrite(os.path.join(save.hmap,fname),hmap)
+            hmap,_=correctPadding(hmap,img_dim,ptype="left",pvalue=0)
+            cv2.imwrite(os.path.join(save.hmap,fname),hmap)
 
-        lmap,_=correctPadding(lmap,img_dim,ptype="left",pvalue=0)
-        cv2.imwrite(os.path.join(save.lmap,fname),lmap)
+            lmap,_=correctPadding(lmap,img_dim,ptype="left",pvalue=0)
+            cv2.imwrite(os.path.join(save.lmap,fname),lmap)
 
-        #-----------------------------------------------------------------------
+            #-----------------------------------------------------------------------
 
-        filepaths.append(os.path.join(save.image,fname))
-        words.append("".join(comps))
-        fiden+=1
-        with open(save.txt,"a+") as f:
-            f.write(f"{fiden}.png#,#{''.join(comps)}#\n")
-        # except Exception as e:
-        #    LOG_INFO(e)
+            filepaths.append(os.path.join(save.image,fname))
+            words.append("".join(comps))
+            fiden+=1
+            with open(save.txt,"a+") as f:
+                f.write(f"{fiden}.png#,#{''.join(comps)}#\n")
+        except Exception as e:
+           LOG_INFO(e)
     
     df=pd.DataFrame({"filepath":filepaths,"word":words})
     df.to_csv(os.path.join(save.csv),index=False)
