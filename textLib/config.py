@@ -23,4 +23,6 @@ class text_conf:
     max_pad_perc          = 10
     min_pad_perc          = 1
     comp_weights          = [0.7,0.2,0.1]
+    ghmap_dr              = 3
+    glmap_dr              = 1
     

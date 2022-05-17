@@ -14,6 +14,7 @@ from tqdm import tqdm
 import random
 from PIL import Image
 import math
+from matplotlib import pyplot as plt
 #---------------------------------------------------------------
 def LOG_INFO(msg,mcolor='blue'):
     '''
@@ -51,7 +52,7 @@ def random_exec(poplutation=[0,1],weights=[0.7,0.3],match=0):
 #--------------------
 # processing 
 #--------------------
-def get_warped_image(img,warp_vec,coord,max_warp_perc):
+def get_warped_image(img,warp_vec,coord,max_warp_perc=None,xwarp=None,ywarp=None):
     '''
         returns warped image and new coords
         args:
@@ -68,9 +69,10 @@ def get_warped_image(img,warp_vec,coord,max_warp_perc):
     x2,y2=coord[1]
     x3,y3=coord[2]
     x4,y4=coord[3]
-    # warping calculation
-    xwarp=random.randint(0,max_warp_perc)/100
-    ywarp=random.randint(0,max_warp_perc)/100
+    if xwarp is None and ywarp is None:
+        # warping calculation
+        xwarp=random.randint(0,max_warp_perc)/100
+        ywarp=random.randint(0,max_warp_perc)/100
     # construct destination
     dx=int(width*xwarp)
     dy=int(height*ywarp)
@@ -87,7 +89,7 @@ def get_warped_image(img,warp_vec,coord,max_warp_perc):
     img = cv2.warpPerspective(img, M, (width,height),flags=cv2.INTER_NEAREST)
     return img,dst
 
-def warp_data(img,max_warp_perc):
+def warp_data(img,max_warp_perc,xwarp=None,ywarp=None):
     warp_types=["p1","p2","p3","p4"]
     height,width=img.shape
 
@@ -104,15 +106,16 @@ def warp_data(img,max_warp_perc):
             idxs=[1,3]
         if random_exec():    
             idx=random.choice(idxs)
-            img,coord=get_warped_image(img,warp_types[idx],coord,max_warp_perc)
+            img,coord=get_warped_image(img,warp_types[idx],coord,max_warp_perc,xwarp,ywarp)
     return img
 
 
-def rotate_image(mat, angle_max=5):
+def rotate_image(mat, angle_max=5,angle=None):
     """
         Rotates an image (angle in degrees) and expands image to avoid cropping
     """
-    angle=random.randint(-angle_max,angle_max)
+    if angle is None:
+        angle=random.randint(-angle_max,angle_max)
     height, width = mat.shape[:2] # image shape has 3 dimensions
     image_center = (width/2, height/2) # getRotationMatrix2D needs coordinates in reverse order (width, height) compared to shape
 
@@ -137,6 +140,7 @@ def rotate_image(mat, angle_max=5):
 def post_process_word_image(img,config):
     # warp 
     if random_exec(weights=config.warping_exec_weights):
+         # warping calculation
         img=warp_data(img,config.warping_len_max_perc)
         
     # rotate
@@ -144,6 +148,40 @@ def post_process_word_image(img,config):
         img=rotate_image(img,angle_max=config.rotation_angle_max)
         
     return img
+
+def post_process_images(images,config):
+    processed=[img for img in images]
+    # warp 
+    if random_exec(weights=config.warping_exec_weights):
+        img=processed[0]
+        warp_types=["p1","p2","p3","p4"]
+        height,width=img.shape
+        coord=[[0,0], 
+            [width-1,0], 
+            [width-1,height-1], 
+            [0,height-1]]
+        xwarp=random.randint(0,config.warping_len_max_perc)/100
+        ywarp=random.randint(0,config.warping_len_max_perc)/100
+        # warp
+        for i in range(2):
+            if i==0:
+                idxs=[0,2]
+            else:
+                idxs=[1,3]
+            if random_exec():    
+                idx=random.choice(idxs)
+                for idx,img in enumerate(images):
+                    img,coord=get_warped_image(img,warp_types[idx],coord,None,xwarp,ywarp)
+                    processed[idx]=img
+                    
+    
+    if random_exec(weights=config.rotation_exec_weights):
+        angle=random.randint(-config.rotation_angle_max,config.rotation_angle_max)
+        for idx,img in enumerate(images):
+            img=rotate_image(img,angle=angle)
+            processed[idx]=img
+        
+    return processed
 
 #---------------------------------------------------------------
 # image utils
@@ -197,7 +235,7 @@ def padAllAround(img,pad_dim,pad_val,pad_single=None):
         img =np.concatenate([left_pad,img,right_pad],axis=1)
     return img
 
-def padWordImage(img,pad_loc,pad_dim,pad_type,pad_val):
+def padWordImage(img,pad_loc,pad_dim,pad_type,pad_val,gray=False):
     '''
         pads an image with white value
         args:
@@ -209,23 +247,34 @@ def padWordImage(img,pad_loc,pad_dim,pad_type,pad_val):
     '''
     
     if pad_loc=="lr":
-        # shape
-        h,w,d=img.shape
+        if gray:
+            # shape
+            h,w=img.shape
+        else:
+            h,w,d=img.shape
         if pad_type=="central":
             # pad widths
             left_pad_width =(pad_dim-w)//2
             # print(left_pad_width)
             right_pad_width=pad_dim-w-left_pad_width
             # pads
-            left_pad =np.ones((h,left_pad_width,3))*pad_val
-            right_pad=np.ones((h,right_pad_width,3))*pad_val
+            if gray:
+                left_pad =np.ones((h,left_pad_width))*pad_val
+                right_pad=np.ones((h,right_pad_width))*pad_val
+            
+            else:
+                left_pad =np.ones((h,left_pad_width,3))*pad_val
+                right_pad=np.ones((h,right_pad_width,3))*pad_val
             # pad
             img =np.concatenate([left_pad,img,right_pad],axis=1)
         else:
             # pad widths
             pad_width =pad_dim-w
             # pads
-            pad =np.ones((h,pad_width,3))*pad_val
+            if gray:
+                pad =np.ones((h,pad_width))*pad_val
+            else:
+                pad =np.ones((h,pad_width,3))*pad_val
             # pad
             img =np.concatenate([img,pad],axis=1)
     else:
@@ -237,7 +286,10 @@ def padWordImage(img,pad_loc,pad_dim,pad_type,pad_val):
         else:
             pad_height =pad_dim-h
             # pads
-            pad =np.ones((pad_height,w,3))*pad_val
+            if gray:
+                pad =np.ones((pad_height,w))*pad_val
+            else:
+                pad =np.ones((pad_height,w,3))*pad_val
             # pad
             img =np.concatenate([img,pad],axis=0)
     return img.astype("uint8")    
@@ -256,12 +308,20 @@ def correctPadding(img,dim,ptype="left",pvalue=255):
     '''
     img_height,img_width=dim
     mask=0
-    # check for pad
-    h,w,d=img.shape
-    
+    if len(img.shape)==2:
+        gray=True
+        h,w=img.shape
+    else:
+        gray=False
+        # check for pad
+        h,w,d=img.shape
+        
     w_new=int(img_height* w/h) 
     img=cv2.resize(img,(w_new,img_height),fx=0,fy=0, interpolation = cv2.INTER_NEAREST)
-    h,w,d=img.shape
+    if gray:
+        h,w=img.shape
+    else: 
+        h,w,d=img.shape
     if w > img_width:
         # for larger width
         h_new= int(img_width* h/w) 
@@ -271,7 +331,8 @@ def correctPadding(img,dim,ptype="left",pvalue=255):
                      pad_loc="tb",
                      pad_dim=img_height,
                      pad_type=ptype,
-                     pad_val=pvalue)
+                     pad_val=pvalue,
+                     gray=gray)
         mask=img_width
 
     elif w < img_width:
@@ -280,7 +341,8 @@ def correctPadding(img,dim,ptype="left",pvalue=255):
                     pad_loc="lr",
                     pad_dim=img_width,
                     pad_type=ptype,
-                    pad_val=pvalue)
+                    pad_val=pvalue,
+                    gray=gray)
         mask=w
     
     # error avoid
