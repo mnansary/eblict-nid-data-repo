@@ -9,8 +9,8 @@ import sys
 sys.path.append('../')
 
 import argparse
-from dataLib.data import Data
-from dataLib.utils import *
+from locLib.data import Data
+from locLib.utils import *
 from tqdm.auto import tqdm
 import os
 import cv2
@@ -27,28 +27,18 @@ def main(args):
     img_dir =create_dir(save_dir,"images")
     mask_dir=create_dir(save_dir,"masks")
     anon_dir=create_dir(save_dir,"anons")
-    data_csv =os.path.join(save_dir,"data.csv")
     n_data=int(args.num_data)
     src=Data(data_dir)
     LOG_INFO(save_dir)
 
     for face in ["front","back"]:
         for card_type in ["nid","smart"]:
-            if card_type=="nid":
-                aug=Modifier(use_brightness=False)
-            else:
-                aug=Modifier()
             for i in tqdm(range(n_data)):
                 try:
                     if face=="front":
                         image,mask,data=src.createCardFront(card_type)
                     else:
                         image,mask,data=src.createCardBack(card_type)
-                    image=enhanceImage(image)
-                    image=aug.noise(image)
-                    if random_exec(weights=[0.3,0.7],match=0):
-                        image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-        
                     # save
                     cv2.imwrite(os.path.join(img_dir,f"{card_type}_{face}_{i}.png"),image)
                     cv2.imwrite(os.path.join(mask_dir,f"{card_type}_{face}_{i}.png"),mask)
