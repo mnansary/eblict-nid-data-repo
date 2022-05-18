@@ -149,7 +149,7 @@ def createSyntheticData(iden,
     class save:    
         image=create_dir(save_dir,"image")
         #mask =create_dir(save_dir,"mask")
-        #std  =create_dir(save_dir,"std")
+        std  =create_dir(save_dir,"std")
         csv=os.path.join(save_dir,"data.csv")
         txt=os.path.join(save_dir,"data.txt")
     
@@ -158,14 +158,14 @@ def createSyntheticData(iden,
     filepaths=[]
     words=[]
     fiden=0+fname_offset
-    #def_font=PIL.ImageFont.truetype(resources.def_font,comp_dim)
+    def_font=PIL.ImageFont.truetype(resources.def_font,comp_dim)
     # loop
     for idx in tqdm(range(len(dictionary))):
         try:
             word=dictionary.iloc[idx,0]
             # std
-            #std=createFontImage(def_font,word) 
-            #std=255-std
+            std=createFontImage(def_font,word) 
+            std=255-std
             # word mask
             fsize=random.randint(text_conf.min_font_text_dim,text_conf.max_font_text_dim)
             font=PIL.ImageFont.truetype(random.choice(resources.fonts),fsize)
@@ -182,9 +182,9 @@ def createSyntheticData(iden,
             #image,_=correctPadding(image,img_dim,ptype="left")
             cv2.imwrite(os.path.join(save.image,fname),image)
             ## std
-            #std=cv2.merge((std,std,std))
-            #std,_=correctPadding(std,img_dim,ptype="left")
-            #cv2.imwrite(os.path.join(save.std,fname),std)
+            std=cv2.merge((std,std,std))
+            std,_=correctPadding(std,img_dim,ptype="left")
+            cv2.imwrite(os.path.join(save.std,fname),std)
             ## mask
             # wmask[wmask>0]=255
             # wmask=255-wmask
