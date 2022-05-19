@@ -11,6 +11,7 @@ import random
 from PIL import Image
 import math
 from .utils import randColor
+from .augmentation import augment
 import blend_modes
 
 
@@ -94,9 +95,16 @@ def mono_back(height,width):
     back=back.astype("uint8")
     return back
 
+def color_back(height,width):
+    color=randColor()
+    back=np.zeros((height,width,3))
+    back[:,:]=color
+    back=back.astype("uint8")
+    return back
+
 
 def get_background(img,back_paths):
-    back_funct=random.choice(["scene","cluttered",mono_back,gaussian_noise,quasicrystal])
+    back_funct=random.choice(["scene","cluttered",mono_back,gaussian_noise,quasicrystal,color_back])
     if back_funct=="scene":
         back=get_scene_back(img,back_paths)
     elif back_funct=="cluttered":
@@ -104,38 +112,34 @@ def get_background(img,back_paths):
     else:
         h,w=img.shape
         back=back_funct(h,w)
+    back=augment(back)
     return back
 
 #----------------------------------------
 # create foreground
 #----------------------------------------
-def get_foreground(img,back_paths):
-    fore_type=random.choice(["scene","cluttered","mono"])
-    if fore_type=="scene":
-        fore=get_scene_back(img,back_paths)
-    elif fore_type=="cluttered":
-        fore=get_scene_cluttered_back(img,back_paths)
-    else:
+def get_foreground(img):
+    fore_type=random.choice(["mono","color"])
+    if fore_type=="color":
         h,w=img.shape
         fore=np.zeros((h,w,3))
         fore[:,:]=randColor()
+    else:
+        h,w=img.shape
+        fore=np.zeros((h,w,3))
+        fore[:,:]=randColor(col=False)
 
     img_r=255-img
     mask=cv2.merge((img_r,img_r,img_r))
-    fore=0.5*mask+0.5*fore
+    fore=0.1*mask+0.9*fore
     fore=fore.astype("uint8")
     fore[img==0]=(255,255,255)
+    fore=augment(fore,base=True)
     return fore
     
 #----------------------------------------
 # blending utils
 #----------------------------------------
-def weighted_blend(back,fore):
-    bw=random.choice([0.1,0.2,0.3,0.4,0.5])
-    fw=1-bw
-    data=bw*back+fw*fore
-    return data.astype("uint8")
-
 def solid_blend(back,fore,mask):
     fore[mask==0]=back[mask==0]
     return fore
@@ -177,16 +181,14 @@ def check_visibility(image, mask):
     visit = visit[1:-1, 1:-1]
     count = np.sum(visit & border)
     total = np.sum(border)
-    return total > 0 and count <= total * 0.1
+    return total > 0 and count <= total * 0.05
 
 def get_blended_data(back,fore,mask):
-    ops=["solid","weighted"]+BLENDS
+    ops=["solid"]+BLENDS
     random.shuffle(ops)
     for op in ops:
         if op=="solid":
             data=solid_blend(back,fore,mask)
-        elif op=="weighted":
-            data=weighted_blend(back,fore)
         else:
             data=multi_blend(back,fore,op)
         if check_visibility(data,mask):

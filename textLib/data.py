@@ -17,7 +17,7 @@ import PIL.Image , PIL.ImageDraw , PIL.ImageFont
 import math
 
 from .style import get_background, get_blended_data, get_foreground 
-from .augmentation import get_augmented_data
+from .augmentation import augment
 from .config import text_conf,augment_conf
 from .utils import create_dir,LOG_INFO,random_exec,post_process_word_image,padAllAround,correctPadding
 
@@ -94,32 +94,31 @@ def mask_negation(mask):
     return mask
 
 
-def create_word_mask(word,font,comp_dim):
+def create_word_mask(word,font):
     # image
     img=createFontImage(font,word)
-    #resize to std height
-    h,w=img.shape
-    w_new=int(comp_dim* w/h) 
-    img=cv2.resize(img,(w_new,comp_dim),fx=0,fy=0, interpolation = cv2.INTER_NEAREST)
-
     img=post_process_word_image(img,augment_conf)
     img=np.squeeze(img)
     # extend image
-    if random_exec(weights=text_conf.ext_weights):
-        hi,wi=img.shape
-        ptype=random.choice(["tb","lr",None])
-        pdim=math.ceil(0.01*wi*random.randint(text_conf.min_pad_perc,text_conf.max_pad_perc))
-        img=padAllAround(img,pdim,0,pad_single=ptype)
-    # resize to std height
-    h,w=img.shape
-    w_new=int(comp_dim* w/h) 
-    img=cv2.resize(img,(w_new,comp_dim),fx=0,fy=0, interpolation = cv2.INTER_NEAREST)
-
     if random_exec(weights=augment_conf.mask_negation_weights):
         mask=mask_negation(img)
     else:
         mask=np.copy(img)
-    return mask,img 
+    return mask
+
+def create_single_image(word,font,resources):
+    mask=create_word_mask(word,font)
+    # image
+    back=get_background(mask,resources.backs)
+    fore=get_foreground(mask)
+    image=get_blended_data(back,fore,mask)
+    image=augment(image,base=True)
+    img_height=random.randint(text_conf.min_font_text_dim,text_conf.max_font_text_dim)
+    h,w,_=image.shape
+    w_new=int(img_height* w/h) 
+    image=cv2.resize(image,(w_new,img_height))
+    return image
+    
 
 
 
@@ -149,7 +148,7 @@ def createSyntheticData(iden,
     class save:    
         image=create_dir(save_dir,"image")
         #mask =create_dir(save_dir,"mask")
-        std  =create_dir(save_dir,"std")
+        #std  =create_dir(save_dir,"std")
         csv=os.path.join(save_dir,"data.csv")
         txt=os.path.join(save_dir,"data.txt")
     
@@ -157,49 +156,27 @@ def createSyntheticData(iden,
     # dataframe vars
     filepaths=[]
     words=[]
+    mvals=[]
     fiden=0+fname_offset
-    def_font=PIL.ImageFont.truetype(resources.def_font,comp_dim)
+    #def_font=PIL.ImageFont.truetype(resources.def_font,comp_dim)
     # loop
     for idx in tqdm(range(len(dictionary))):
         try:
-            word=dictionary.iloc[idx,0]
-            # std
-            std=createFontImage(def_font,word) 
-            std=255-std
-            # word mask
-            fsize=random.randint(text_conf.min_font_text_dim,text_conf.max_font_text_dim)
-            font=PIL.ImageFont.truetype(random.choice(resources.fonts),fsize)
-            mask,wmask=create_word_mask(word,font,comp_dim)
-            # image
-            back=get_background(mask,resources.backs)
-            fore=get_foreground(mask,resources.backs)
-            image=get_blended_data(back,fore,mask)
-            image=get_augmented_data(image)
-            #-----------------------------------------------------------------------
-            # save
             fname=f"{fiden}.png"
-            ## image
-            #image,_=correctPadding(image,img_dim,ptype="left")
-            cv2.imwrite(os.path.join(save.image,fname),image)
-            ## std
-            std=cv2.merge((std,std,std))
-            std,_=correctPadding(std,img_dim,ptype="left")
-            cv2.imwrite(os.path.join(save.std,fname),std)
-            ## mask
-            # wmask[wmask>0]=255
-            # wmask=255-wmask
-            # mask=cv2.merge((wmask,wmask,wmask))
-            # mask,_=correctPadding(mask,img_dim,ptype="left")
-            # cv2.imwrite(os.path.join(save.mask,fname),mask)
+            word=dictionary.iloc[idx,0]
+            font=PIL.ImageFont.truetype(random.choice(resources.fonts),comp_dim)
+            image=create_single_image(word,font,resources)
             #-----------------------------------------------------------------------
-
+            image,mval=correctPadding(image,img_dim,ptype="left")
+            mvals.append(mval)
+            cv2.imwrite(os.path.join(save.image,fname),image)
             filepaths.append(os.path.join(save.image,fname))
             words.append(word)
             fiden+=1
             with open(save.txt,"a+") as f:
-                f.write(f"{fiden}.png#,#{word}#\n")
+                f.write(f"{fiden}.png#,#{word}#,#{mval}#\n")
         except Exception as e:
            LOG_INFO(e)
     
-    df=pd.DataFrame({"filepath":filepaths,"word":words})
+    df=pd.DataFrame({"filepath":filepaths,"word":words,"mask":mvals})
     df.to_csv(os.path.join(save.csv),index=False)

@@ -10,6 +10,7 @@ import imgaug.augmenters as iaa
 import random
 import numpy as np
 import cv2 
+from .utils import random_exec
 
 
 def additiveGaussian(img):
@@ -54,20 +55,6 @@ def motionBlur(img):
     img = aug(image=img)
     return img
 
-def addBrightness(image):    
-    ## Conversion to HLSmask
-    image_HLS = cv2.cvtColor(image,cv2.COLOR_RGB2HLS)     
-    image_HLS = np.array(image_HLS, dtype = np.float64)
-    ## generates value between 0.5 and 1.5       
-    random_brightness_coefficient = np.random.uniform()+0.5  
-    ## scale pixel values up or down for channel 1(Lightness) 
-    image_HLS[:,:,1] = image_HLS[:,:,1]*random_brightness_coefficient
-    ##Sets all values above 255 to 255    
-    image_HLS[:,:,1][image_HLS[:,:,1]>255]  = 255     
-    image_HLS = np.array(image_HLS, dtype = np.uint8)    
-    ## Conversion to RGB
-    image_RGB = cv2.cvtColor(image_HLS,cv2.COLOR_HLS2RGB)     
-    return image_RGB
 
 AUGMENTATIONS=[additiveGaussian,
               elasticDistortion,
@@ -75,6 +62,54 @@ AUGMENTATIONS=[additiveGaussian,
               medianBlur,
               motionBlur]
 
-def get_augmented_data(img):
-    op=random.choice(AUGMENTATIONS)
-    return op(img)
+BLURS=[iaa.AverageBlur(),iaa.GaussianBlur(),iaa.MedianBlur(),
+       iaa.BilateralBlur(),iaa.MotionBlur(),iaa.MeanShiftBlur()]
+CONTRASTS=[iaa.GammaContrast(),
+        iaa.SigmoidContrast(),
+        iaa.LogContrast(),
+        iaa.LinearContrast(),
+        iaa.AllChannelsHistogramEqualization(),
+        iaa.HistogramEqualization(),
+        iaa.AllChannelsCLAHE(),
+        iaa.CLAHE()]
+COLORS=[iaa.WithBrightnessChannels(),
+        iaa.MultiplyAndAddToBrightness(),
+        iaa.MultiplyBrightness(),
+        iaa.AddToBrightness(),
+        iaa.WithHueAndSaturation(),
+        iaa.MultiplyHueAndSaturation(),
+        iaa.MultiplyHue(),
+        iaa.MultiplySaturation(),
+        iaa.RemoveSaturation(),
+        iaa.AddToHueAndSaturation(),
+        iaa.AddToHue(),
+        iaa.AddToSaturation(),
+        iaa.Grayscale(),
+        iaa.ChangeColorTemperature(),
+        iaa.UniformColorQuantization(),
+        iaa.Posterize()]
+
+
+
+AUGMENTATIONS=[additiveGaussian,
+              elasticDistortion,
+              gaussianBlur,
+              medianBlur,
+              motionBlur]
+
+
+def augment(img,base=False):
+    if not base:
+        if random_exec(match=1):
+            op=random.choice(COLORS)
+            img=op(image=img)
+        if random_exec(match=1):    
+            op=random.choice(CONTRASTS)
+            img=op(image=img)
+        if random_exec(match=1):
+            op=random.choice(BLURS)
+            img=op(image=img)
+    if random_exec(match=1):
+        op=random.choice(AUGMENTATIONS)
+        img=op(img)
+    return img

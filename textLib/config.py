@@ -8,7 +8,7 @@ class augment_conf:
     rotation_exec_weights = [0.3,0.7]   
     warping_len_max_perc  = 20
     warping_exec_weights  = [0.3,0.7]
-    mask_negation_prec    = 30
+    mask_negation_prec    = 10
     mask_negation_weights = [0.4,0.6]
 
 class text_conf:
@@ -17,12 +17,12 @@ class text_conf:
     include_space         = False
     max_space             = 3
     space_weights         = [0.8,0.2]
-    max_font_text_dim     = 256
-    min_font_text_dim     = 20
+    max_font_text_dim     = 72
+    min_font_text_dim     = 16
     ext_weights           = [0.7,0.3]
     max_pad_perc          = 10
     min_pad_perc          = 1
-    comp_weights          = [0.7,0.2,0.1]
+    comp_weights          = [0.75,0.2,0.05]
     ghmap_dr              = 3
     glmap_dr              = 1
     

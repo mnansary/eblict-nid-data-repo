@@ -97,16 +97,14 @@ def warp_data(img,max_warp_perc,xwarp=None,ywarp=None):
         [width-1,0], 
         [width-1,height-1], 
         [0,height-1]]
-
-    # warp
-    for i in range(2):
-        if i==0:
-            idxs=[0,2]
-        else:
-            idxs=[1,3]
-        if random_exec():    
-            idx=random.choice(idxs)
-            img,coord=get_warped_image(img,warp_types[idx],coord,max_warp_perc,xwarp,ywarp)
+    w1type=warp_types[random.choice([0,2])]
+    w2type=warp_types[random.choice([1,3])]
+    # warping calculation
+    xwarp=random.randint(0,max_warp_perc)/100
+    ywarp=random.randint(0,max_warp_perc)/100
+    
+    img,coord=get_warped_image(img,w1type,coord,max_warp_perc,xwarp,ywarp)
+    img,coord=get_warped_image(img,w2type,coord,max_warp_perc,xwarp,ywarp)        
     return img
 
 
