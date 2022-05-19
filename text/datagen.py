@@ -31,7 +31,7 @@ def main(args):
     csv         =   args.csv
     img_height  =   int(args.img_height)
     img_width   =   int(args.img_width)
-    iden        =   args.iden
+    iden        =   os.path.basename(csv).split(".")[0]
     seq_max_len =   int(args.seq_max_len)
     tf_size     =   int(args.tf_size)
     vocab_iden  =   args.vocab_iden
@@ -47,15 +47,14 @@ def main(args):
     # storing
     save_path=create_dir(data_dir,iden)
     LOG_INFO(save_path)
-    createRecords(df,save_path,tf_size)
+    createRecords(df,save_path,tf_size,iden)
 
     config={"vocab":vocab,
             "pos_max":seq_max_len,
             "img_height":img_height,
             "img_width" :img_width,
             "tf_size":tf_size,
-            "vocab_iden":vocab_iden,
-            "zip_iden":iden}
+            "vocab_iden":vocab_iden}
 
     with open(config_json, 'w') as fp:
         json.dump(config, fp,sort_keys=True, indent=4,ensure_ascii=False)
@@ -67,9 +66,8 @@ if __name__=="__main__":
     '''
     parser = argparse.ArgumentParser("Recognizer Dataset Creating Script")
     parser.add_argument("csv", help="Path of the source data csv file")
-    parser.add_argument("iden",help="identifier to identify the dataset")
-    parser.add_argument("--seq_max_len",help=" the maximum length of data for modeling")
-    parser.add_argument("--vocab_iden",help=" the vocabulary to use. available: english_numbers,bangla_numbers,english_all,bangla_all,all")
+    parser.add_argument("--seq_max_len",required=False,default=40,help=" the maximum length of data for modeling")
+    parser.add_argument("--vocab_iden",required=False,default="all",help=" the vocabulary to use. available: english_numbers,bangla_numbers,english_all,bangla_all,all")
     parser.add_argument("--tf_size",required=False,default=1024,help=" the size of  data to store in 1 tfrecord:default=1024")
     parser.add_argument("--img_height",required=False,default=64,help ="height for each grapheme: default=64")
     parser.add_argument("--img_width",required=False,default=512,help ="width for each grapheme: default=512")

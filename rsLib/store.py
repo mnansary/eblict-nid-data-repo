@@ -21,6 +21,9 @@ tqdm.pandas()
 #---------------------------------------------------------------
 cols=["filepath","mask","label"]
 eval_cols=cols[1:]
+gpu_devices = tf.config.experimental.list_physical_devices('GPU')
+if any(gpu_devices):
+    tf.config.experimental.set_memory_growth(gpu_devices[0], True)
     
 # feature fuctions
 def _bytes_feature(value):

@@ -72,6 +72,6 @@ if __name__=="__main__":
     for i in range(0,len(csvs),div):
         _csvs=csvs[i:i+div]
         with Pool(processes=len(_csvs)) as pool:
-            pool.map(generate,_csvs)
+            pool.map(generate,_csvs) 
     LOG_INFO("Processing done")
     save_config() 
