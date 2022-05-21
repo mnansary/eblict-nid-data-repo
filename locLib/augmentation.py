@@ -55,8 +55,11 @@ def motionBlur(img):
     return img
 
 
-BLURS=[iaa.AverageBlur(),iaa.GaussianBlur(),iaa.MedianBlur(),
-       iaa.BilateralBlur(),iaa.MotionBlur(),iaa.MeanShiftBlur()]
+BLURS=[iaa.AverageBlur(),
+       iaa.GaussianBlur(),
+       iaa.MedianBlur(),
+       iaa.BilateralBlur(),
+       iaa.MotionBlur()]
 CONTRASTS=[iaa.GammaContrast(),
         iaa.SigmoidContrast(),
         iaa.LogContrast(),

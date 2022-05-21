@@ -222,3 +222,32 @@ def get_image_coords(curr_coord,M):
         dot=np.dot(M,c)
         new_coord.append([int(i) for i in dot])
     return new_coord
+
+def check_visibility(image, mask):
+    gray = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+    height, width = mask.shape
+
+    peak = (mask > 127).astype(np.uint8)
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    bound = (mask > 0).astype(np.uint8)
+    bound = cv2.dilate(bound, kernel, iterations=1)
+
+    visit = bound.copy()
+    visit ^= 1
+    visit = np.pad(visit, 1, constant_values=1)
+
+    border = bound.copy()
+    border[mask > 0] = 0
+
+    flag = 4 | cv2.FLOODFILL_FIXED_RANGE | cv2.FLOODFILL_MASK_ONLY
+
+    for y in range(height):
+        for x in range(width):
+            if peak[y][x]:
+                cv2.floodFill(gray, visit, (x, y), 1, 16, 16, flag)
+
+    visit = visit[1:-1, 1:-1]
+    count = np.sum(visit & border)
+    total = np.sum(border)
+    return total > 0 and count <= total * 0.1

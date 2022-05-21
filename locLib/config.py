@@ -23,14 +23,14 @@ class aug:
 # mask data
 #--------------------
 marking={}    
-marking["bname"]    =1  
-marking["ename"]    =2
-marking["fname"]    =3
-marking["mname"]    =4
-marking["dob"]      =5
-marking["nid"]      =6
-marking["addr"]     =7
+marking["sign"]     =1
+marking["bname"]    =2  
+marking["ename"]    =3
+marking["fname"]    =4
+marking["mname"]    =5
+marking["dob"]      =6
+marking["nid"]      =7
 marking["front"]    =8
-marking["back"]     =9
-marking["sign"]     =10
+marking["addr"]     =9
+marking["back"]     =10
 data_classes=[_class for _class in marking.keys()]

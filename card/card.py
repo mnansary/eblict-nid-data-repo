@@ -42,7 +42,14 @@ def main(args):
                     if random_exec(weights=[0.4,0.6]):
                         image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
                         if random_exec(weights=[0.5,0.5]):
-                            _,image = cv2.threshold(image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+                            _,thresh = cv2.threshold(image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+                            thcheck=cv2.merge((thresh,thresh,thresh))
+                            cmask=np.copy(mask)
+                            cmask[mask>0]=255
+                            cmask=cmask.astype("uint8")
+                            if check_visibility(thcheck,cmask):
+                                image=np.copy(thresh)
+                                
                     
                     # save
                     cv2.imwrite(os.path.join(img_dir,f"{card_type}_{face}_{i}.png"),image)
@@ -51,7 +58,7 @@ def main(args):
                     with open(os.path.join(anon_dir,f"{card_type}_{face}_{i}.json"), 'w') as fp:
                         json.dump(data, fp,sort_keys=True, indent=4,ensure_ascii=False)
                 except Exception as e:
-                    pass
+                    print(e)
     
 if __name__=="__main__":
     '''
