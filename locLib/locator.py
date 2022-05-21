@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from .utils import *
 from .config import marking
 from indicparser import graphemeParser
+import json
 gp=graphemeParser("bangla")
 
 #---------------------------------------------------------------------------------------
@@ -42,13 +43,25 @@ def get_warped_image(img,mask,src,xwarp,ywarp,warp_vec):
     return img,mask,dst
 #---------------------------------------------------------------------------------------
 
-def augment_img_base(img_path,mask_path,face,config):
+def augment_img_base(img_path,face,config):
     
     img=cv2.imread(img_path)
     height,width,d=img.shape
     warp_types=["p1","p2","p3","p4"]
-    
+
+    mask_path=img_path.replace("images","masks")
     mask=cv2.imread(mask_path,0)
+    anon_path=img_path.replace("images","anons").replace(".png",".json")
+    mask=cv2.imread(mask_path,0)
+    with open(anon_path) as f:
+        anon = json.load(f)
+
+    for k,v in anon.items():
+        if k in marking.keys():
+            mark=marking[k]
+            for word in v:
+                for wi,wv in word.items():
+                    mask[mask==int(wi)]=mark  
     mask[mask==0]=marking[face]
     curr_coord=[[0,0], 
                 [width-1,0], 
@@ -118,9 +131,9 @@ def pad_image_mask(img,mask,coord,config):
     return img,mask,coord
     
 
-def render_data(backgen,img_path,mask_path,face,config):
+def render_data(backgen,img_path,face,config):
     # base augment
-    img,mask,coord=augment_img_base(img_path,mask_path,face,config)    
+    img,mask,coord=augment_img_base(img_path,face,config)    
         
     # background
     if random_exec(weights=[0.7,0.3],match=0):
@@ -129,10 +142,11 @@ def render_data(backgen,img_path,mask_path,face,config):
         back=next(backgen)
         h,w,d=img.shape
         back=cv2.resize(back,(w,h))
+        back[mask>0]=img[mask>0]
     else:
         back=np.copy(img)
         coord=np.array(coord)
-
-    back[mask>0]=img[mask>0]
+        back[mask>0]=img[mask>0]
+        back[mask==0]=(255,255,255)
     
     return back,mask
