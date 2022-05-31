@@ -13,10 +13,7 @@ import numpy as np
 from tqdm import tqdm
 from .utils import *
 tqdm.pandas()
-from indicparser import graphemeParser
-GP=graphemeParser("bangla")
-vd       =    ['া', 'ি', 'ী', 'ু', 'ূ', 'ৃ', 'ে', 'ৈ', 'ো', 'ৌ']
-cd       =    ['ঁ']
+
 #--------------------
 # helpers
 #--------------------
