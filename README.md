@@ -30,6 +30,56 @@ Gnome       : 3.28.2
 
 * **conda**: use environment.yml: ```conda env create -f environment.yml```
 
-# TODO
-- [x] fix placements
-- [x] combine yolos
+# Data creation
+- git clone this repo
+- change woriking directory to **data**: ```cd data```
+- **modify** and run script.sh: ```./script.sh```
+
+# Modifying script.sh
+* In the ```script.sh``` essentially you have to identify
+    * **save_path**: Where the generated YOLO data will be saved under a folder named YOLO
+    * **card_path**: Where the generated synthetic cards will be stored
+    * **src_path**: a folder that holds 
+        * **noise**  folder : which is available [here](https://www.kaggle.com/datasets/nazmuddhohaansary/nid-noisebgfacesign) 
+        * **resources** folder: which is available [here](https://drive.google.com/drive/folders/1Ag_vi8nRaFbdVUpUaHlXPVVKAIsdynQA?usp=sharing)
+
+        **Essential Folder Structre For src_path**
+
+        ```python
+        ├── noise
+        │   ├── background
+        │   ├── faces
+        │   └── signature
+        └── resources
+        ```
+        **Essential Folder Structre For resources**
+
+        ```python
+        ├── bangla_bold.ttf
+        ├── bangla_reg.ttf
+        ├── dict.json
+        ├── english_bold.ttf
+        ├── english_reg.ttf
+        ├── gpo.csv
+        ├── nid_back_mask.png
+        ├── nid_back.png
+        ├── nid_front_mask.png
+        ├── nid_front.png
+        ├── smart_back_mask.png
+        ├── smart_back.png
+        ├── smart_front_mask.png
+        └── smart_front.png
+        ```
+
+* example ```script.sh``` 
+
+```bash
+#!/bin/sh
+save_path="/backup2/NID/data_repo/data/"
+src_path="/backup2/NID/data_repo/data/source/"
+card_path="/backup2/NID/data_repo/data/cards/"
+#------------------------------------------card------------------------------------------------------
+python card.py $src_path $save_path --num_data 1500
+python yolo.py $src_path $card_path $save_path 
+```
+* used dataset available [here](https://www.kaggle.com/datasets/nazmuddhohaansary/eblict-nid-yolo)
