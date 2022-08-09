@@ -129,6 +129,5 @@ dmypy.json
 .pyre/
 debug.ipynb
 normLib/*
-data/*
 unstable/*
 text/*.sh
